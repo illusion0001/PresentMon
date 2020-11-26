@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <PresentMonVersion>dev</PresentMonVersion>
+    <PresentMonVersion>1.6.0</PresentMonVersion>
     <PresentMonPlatform>$(Platform)</PresentMonPlatform>
   </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition="'$(Platform)'=='Win32'">
