@@ -1255,14 +1255,26 @@ void PMTraceConsumer::HandleDWMEvent(EVENT_RECORD* pEventRecord)
             break;
         }
 
+        // ulFlipChain and ulSerialNumber are expected to be uint32_t data, but
+        // on Windows 8.1 the event properties are specified as uint64_t.
+        auto GetU32FromU32OrU64 = [](EventDataDesc const& desc) {
+            if (desc.size_ == 4) {
+                return desc.GetData<uint32_t>();
+            } else {
+                auto u64 = desc.GetData<uint64_t>();
+                DebugAssert((u64 >> 32) == 0);
+                return (uint32_t) u64;
+            }
+        };
+
         EventDataDesc desc[] = {
             { L"ulFlipChain" },
             { L"ulSerialNumber" },
             { L"hwnd" },
         };
         mMetadata.GetEventData(pEventRecord, desc, _countof(desc));
-        auto ulFlipChain    = desc[0].GetData<uint32_t>();
-        auto ulSerialNumber = desc[1].GetData<uint32_t>();
+        auto ulFlipChain    = GetU32FromU32OrU64(desc[0]);
+        auto ulSerialNumber = GetU32FromU32OrU64(desc[1]);
         auto hwnd           = desc[2].GetData<uint64_t>();
 
         // Lookup the present using the 64-bit token data from the PHT
