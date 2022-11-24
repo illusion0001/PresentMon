@@ -1287,15 +1287,20 @@ void PMTraceConsumer::HandleDWMEvent(EVENT_RECORD* pEventRecord)
     }
     case Microsoft_Windows_Dwm_Core::SCHEDULE_SURFACEUPDATE_Info::Id:
     {
+        // On Windows 8.1 PresentCount is named
+        // OutOfFrameDirectFlipPresentCount, so we look up both allowing one to
+        // be optional and then check which one we found.
         EventDataDesc desc[] = {
             { L"luidSurface" },
             { L"PresentCount" },
+            { L"OutOfFrameDirectFlipPresentCount" },
             { L"bindId" },
         };
-        mMetadata.GetEventData(pEventRecord, desc, _countof(desc));
+        mMetadata.GetEventData(pEventRecord, desc, _countof(desc), 1);
         auto luidSurface  = desc[0].GetData<uint64_t>();
-        auto PresentCount = desc[1].GetData<uint64_t>();
-        auto bindId       = desc[2].GetData<uint64_t>();
+        auto PresentCount = (desc[1].status_ & PROP_STATUS_FOUND) ? desc[1].GetData<uint64_t>()
+                                                                  : desc[2].GetData<uint64_t>();
+        auto bindId       = desc[3].GetData<uint64_t>();
 
         Win32KPresentHistoryToken key(luidSurface, PresentCount, bindId);
         auto eventIter = mPresentByWin32KPresentHistoryToken.find(key);
