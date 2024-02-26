@@ -1,0 +1,15 @@
+name: Build PresentMon
+
+on: [ push, pull_request ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@main
+      - name: Build PresentMon
+        run: msbuild /p:Platform=x64,Configuration=Release PresentMon.sln
+
