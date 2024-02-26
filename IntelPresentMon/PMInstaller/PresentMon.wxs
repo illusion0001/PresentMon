@@ -408,6 +408,26 @@
                     KeyPath="yes">
                 </File>
             </Component>
+          <Component
+              Id="pm_app_testcert"
+              Guid="F2FF5AE6-1550-4E71-A8B9-5DC41AF29CB8">
+            <File
+                Id="pm_app_testcert"
+                Name="testcert.cer"
+                Source="$(var.PresentMon.TargetDir)testcert.cer"
+                KeyPath="yes">
+            </File>
+          </Component>
+          <Component
+              Id="pm_app_install_cert"
+              Guid="F2FF5AE6-1550-4E71-A8B9-5DC41AF29CB9">
+            <File
+                Id="pm_app_install_cert"
+                Name="cert_install.txt"
+                Source="$(var.PresentMon.TargetDir)..\..\cert_install.txt"
+                KeyPath="yes">
+            </File>
+          </Component>
             <Component
                 Id="pm_app_target_block_list_txt"
                 Guid="203B303F-A097-4B1E-BFA0-895794F192C1">

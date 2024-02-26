@@ -1,0 +1,10 @@
+This certificate is required for uiAccess to work (overlays)
+<https://github.com/GameTechDev/PresentMon/blob/e3f290148f8caaa79442b1d57f942eee5ef4551b/README-Service.md>
+
+1. Open PowerShell as administrator
+2. Change directory to install folder. `cd C:\Program Files\Intel\PresentMon\PresentMonApplication` OR if you are using zip version, change directory to the PresentMon folder that has `testcert.cer` file. (i.e `cd D:\PresentMon`)
+3. Paste this command in:
+
+```
+certutil -addstore root testcert.cer
+```
