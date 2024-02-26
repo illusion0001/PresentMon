@@ -39,3 +39,4 @@ PresentMon/PresentMon.args.json
 PresentData/PresentData.args.json
 
 IntelPresentMon/SampleClient/log.txt
+*.csv
