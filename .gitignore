@@ -34,3 +34,4 @@ ipch/
 
 
 IntelPresentMon/AppCef/CefNano.args.json
+*.csv
