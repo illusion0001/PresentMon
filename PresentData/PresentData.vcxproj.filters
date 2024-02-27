@@ -31,6 +31,9 @@
       <Filter>ETW</Filter>
     </ClInclude>
     <ClInclude Include="GpuTrace.hpp" />
+    <ClInclude Include="RTSSHooksTypes.h" />
+    <ClInclude Include="RTSSSharedMemory.h" />
+    <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Debug.cpp" />

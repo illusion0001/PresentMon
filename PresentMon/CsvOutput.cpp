@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: MIT
 
 #include "PresentMon.hpp"
+#include "../PresentData/RTSSSharedMemory.h"
 
 static OutputCsv gSingleOutputCsv = {};
 static uint32_t gRecordingCount = 1;
@@ -23,6 +24,50 @@ const char* PresentModeToString(PresentMode mode)
     case PresentMode::Hardware_Composed_Independent_Flip: return "Hardware Composed: Independent Flip";
     default: return "Other";
     }
+}
+
+const char* RuntimeToString2(DWORD processId)
+{
+    char* api = "unknown";
+    HANDLE hMapFile = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+
+    if (hMapFile)
+    {
+        LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+        LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+        if (pMem)
+        {
+            if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
+            {
+                for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
+                {
+                    RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
+
+                    if (pEntry->dwProcessID == processId)
+                    {
+                        api = (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_OGL ? "OpenGL"
+                            : (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_DD ? "DirectDraw"
+                            : (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D8 ? "DX8"
+                            : (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9 ? "DX9"
+                            : (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9EX ? "DX9 EX"
+                            : (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D10 ? "DX10"
+                            : (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D11 ? "DX11"
+                            : (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12 ? "DX12"
+                            : (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12AFR ? "DX12 AFR"
+                            : (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_VULKAN ? "Vulkan"
+                            : "unknown";
+
+                        break;
+                    }
+                }
+                UnmapViewOfFile(pMapAddr);
+            }
+            CloseHandle(hMapFile);
+        }
+    }
+
+    return api;
 }
 
 const char* RuntimeToString(Runtime rt)
@@ -144,11 +189,12 @@ void UpdateCsv(ProcessInfo* processInfo, SwapChainData const& chain, PresentEven
     }
 
     // Output in CSV format
-    fwprintf(fp, L"%s,%d,%llu,%hs,%d,%d,%hs,",
+    fwprintf(fp, L"%s,%d,%d,%hs,%d,%d,%hs,",
         processInfo->mModuleName.c_str(),
         p.ProcessId,
         p.PresentFrameCount,
         RuntimeToString(p.Runtime),
+        // RuntimeToString2(p.ProcessId),
         p.SyncInterval,
         p.PresentFlags,
         FinalStateToDroppedString(p.FinalState));

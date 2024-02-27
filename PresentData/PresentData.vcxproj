@@ -347,6 +347,9 @@
     <ClInclude Include="GpuTrace.hpp" />
     <ClInclude Include="MixedRealityTraceConsumer.hpp" />
     <ClInclude Include="PresentMonTraceConsumer.hpp" />
+    <ClInclude Include="RTSSHooksTypes.h" />
+    <ClInclude Include="RTSSSharedMemory.h" />
+    <ClInclude Include="stdafx.h" />
     <ClInclude Include="TraceConsumer.hpp" />
     <ClInclude Include="TraceSession.hpp" />
   </ItemGroup>

@@ -1937,6 +1937,37 @@ std::shared_ptr<PresentEvent> PMTraceConsumer::FindThreadPresent(uint32_t thread
     return ii == mPresentByThreadId.end() ? std::shared_ptr<PresentEvent>() : ii->second;
 }
 
+#include "RTSSSharedMemory.h"
+
+void PMTraceConsumer::SavePresentTodwStatFrames(DWORD processId, uint32_t count)
+{
+    HANDLE hMapFile = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, "RTSSSharedMemoryV2");
+    if (hMapFile)
+    {
+        LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0);
+        LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+        if (pMem)
+        {
+            if ((pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000))
+            {
+                for (DWORD dwEntry = 0; dwEntry < pMem->dwAppArrSize; dwEntry++)
+                {
+                    RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY pEntry = (RTSS_SHARED_MEMORY::LPRTSS_SHARED_MEMORY_APP_ENTRY)((LPBYTE)pMem + pMem->dwAppArrOffset + dwEntry * pMem->dwAppEntrySize);
+
+                    if (pEntry->dwProcessID == processId)
+                    {
+                        pEntry->dwStatFrames = count;
+                        break;
+                    }
+                }
+                UnmapViewOfFile(pMapAddr);
+            }
+            CloseHandle(hMapFile);
+        }
+    }
+}
+
 std::shared_ptr<PresentEvent> PMTraceConsumer::FindOrCreatePresent(EVENT_HEADER const& hdr)
 {
     // First, we check if there is an in-progress present that was last
@@ -1985,9 +2016,13 @@ std::shared_ptr<PresentEvent> PMTraceConsumer::FindOrCreatePresent(EVENT_HEADER 
         present->PresentStartTime = *(uint64_t*) &hdr.TimeStamp;
         present->ProcessId = hdr.ProcessId;
         present->ThreadId = hdr.ThreadId;
+        // there will be a chance when frames rendered to max will be `0x7fffffff` and goes over s32
+        if (mPresentFrames == 0x7fffffff)
+            mPresentFrames = 0;
         mPresentFrames++;
         // Save it to `PresentEvent` struct for `OutputCsv`.
         present->PresentFrameCount = mPresentFrames;
+        SavePresentTodwStatFrames(hdr.ProcessId, (uint32_t)mPresentFrames);
 
         TrackPresent(present, presentsByThisProcess);
 
