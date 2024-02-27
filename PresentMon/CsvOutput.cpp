@@ -49,7 +49,7 @@ static void WriteCsvHeader(FILE* fp)
     fwprintf(fp,
         L"Application"
         L",ProcessID"
-        L",SwapChainAddress"
+        L",PresentCount"
         L",Runtime"
         L",SyncInterval"
         L",PresentFlags"
@@ -144,10 +144,10 @@ void UpdateCsv(ProcessInfo* processInfo, SwapChainData const& chain, PresentEven
     }
 
     // Output in CSV format
-    fwprintf(fp, L"%s,%d,0x%016llX,%hs,%d,%d,%hs,",
+    fwprintf(fp, L"%s,%d,%llu,%hs,%d,%d,%hs,",
         processInfo->mModuleName.c_str(),
         p.ProcessId,
-        p.SwapChainAddress,
+        p.PresentFrameCount,
         RuntimeToString(p.Runtime),
         p.SyncInterval,
         p.PresentFlags,

@@ -145,6 +145,7 @@ struct PresentEvent {
 
     // Extra present parameters obtained through DXGI or D3D9 present
     uint64_t SwapChainAddress;
+    uint64_t PresentFrameCount; // since PresentMon started on boot
     int32_t SyncInterval;
     uint32_t PresentFlags;
 
@@ -237,6 +238,9 @@ struct PMTraceConsumer
 
     uint32_t DwmProcessId = 0;
     uint32_t DwmPresentThreadId = 0;
+    // Whenever a present is completed, we save it here.
+    // Because `present->PresentFrameCount++;` doesn't work for some reason.
+    uint64_t mPresentFrames = 0;
 
     std::deque<std::shared_ptr<PresentEvent>> mPresentsWaitingForDWM;
 

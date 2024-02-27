@@ -85,6 +85,7 @@ PresentEvent::PresentEvent()
     , InputTime(0)
 
     , SwapChainAddress(0)
+    , PresentFrameCount(0)
     , SyncInterval(-1)
     , PresentFlags(0)
 
@@ -1984,6 +1985,9 @@ std::shared_ptr<PresentEvent> PMTraceConsumer::FindOrCreatePresent(EVENT_HEADER 
         present->PresentStartTime = *(uint64_t*) &hdr.TimeStamp;
         present->ProcessId = hdr.ProcessId;
         present->ThreadId = hdr.ThreadId;
+        mPresentFrames++;
+        // Save it to `PresentEvent` struct for `OutputCsv`.
+        present->PresentFrameCount = mPresentFrames;
 
         TrackPresent(present, presentsByThisProcess);
 
