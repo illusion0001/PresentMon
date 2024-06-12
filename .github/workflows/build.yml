@@ -9,75 +9,76 @@ jobs:
       contents: write
     env:
       VC_PKG_PATH: build\vcpkg
-      SOLUTION_FILE: PresentMon2.sln
+      SOLUTION_FILE: PresentMon\PresentMon.vcxproj
       CONFIG: Release
     steps:
       - name: Checkout
         uses: actions/checkout@main
         with:
           fetch-depth: 0
-      - name: Checkout vcpkg
-        uses: actions/checkout@main
-        with:
-          repository: Microsoft/vcpkg
-          path: ${{ env.VC_PKG_PATH }}
-          # Needs full clone to be able to checkout another commit.
-          # error: while checking out baseline from commit `<sha_commit>`, failed to `git show` versions/baseline.json. This may be fixed by fetching commits with `git fetch`.
-          fetch-depth: 0
-      - name: Setup variables
-        run: |
-          $_ver = "$(git rev-list HEAD --count)-${{ github.run_number }}-$(git rev-parse --short=8 HEAD)"
-          $_name = "$(Split-Path -Path $pwd -Leaf)-$_ver"
-          $_file_ext = "zip"
-          echo "commit_ver=$_name" >> "$Env:GITHUB_ENV"
-          echo "arc_name=$_name.$_file_ext" >> "$Env:GITHUB_ENV"
-          echo "arc_path=${{ github.workspace }}\$_name.$_file_ext" >> "$Env:GITHUB_ENV"
-          echo "installer_path=${{ github.workspace }}\$_name.msi" >> "$Env:GITHUB_ENV"
-          mkdir build/${{ env.CONFIG }}
-      - name: Make certificate and install WiX Toolset
-        working-directory: build/${{ env.CONFIG }}
-        run: |
-          echo "Setup VS Environment Variables"
-          $installationPath = vswhere.exe -prerelease -latest -property installationPath
-          if ($installationPath -and (test-path "$installationPath\Common7\Tools\vsdevcmd.bat"))
-          {
-              & "${env:COMSPEC}" /s /c "`"$installationPath\Common7\Tools\vsdevcmd.bat`" -no_logo && set" | foreach-object {
-                  $name, $value = $_ -split '=', 2
-                  set-content env:\"$name" $value
-              }
-          }
-          echo "Create build certificate"
-          makecert -r -pe -n "CN=Test Certificate - For Internal Use Only" -ss PrivateCertStore testcert.cer
-          certutil -addstore root testcert.cer
-          echo "Install WiX Toolset"
-          curl -fLJO https://wixtoolset.gallerycdn.vsassets.io/extensions/wixtoolset/wixtoolsetvisualstudio2022extension/1.0.0.22/1668223914320/Votive2022.vsix
-          VSIXInstaller.exe /quiet Votive2022.vsix
-      - name: Install vcpkg
-        run: |
-          ${{ env.VC_PKG_PATH }}\bootstrap-vcpkg.bat
-          ${{ env.VC_PKG_PATH }}\vcpkg.exe integrate install
-          ${{ env.VC_PKG_PATH }}\vcpkg.exe install
-      - name: Setup Chromium Embedded Framework
-        run: |
-          curl -fLJO "https://github.com/illusion0001/PresentMon/releases/download/temp-files/cef_binary_122.1.8+g40272b5+chromium-122.0.6261.69_windows64_CefBuilt.7z"
-          7z x "cef_binary_122.1.8+g40272b5+chromium-122.0.6261.69_windows64_CefBuilt.7z" "-o${{ github.workspace }}\IntelPresentMon\AppCef"
+      # - name: Checkout vcpkg
+      #   uses: actions/checkout@main
+      #   with:
+      #     repository: Microsoft/vcpkg
+      #     path: ${{ env.VC_PKG_PATH }}
+      #     # Needs full clone to be able to checkout another commit.
+      #     # error: while checking out baseline from commit `<sha_commit>`, failed to `git show` versions/baseline.json. This may be fixed by fetching commits with `git fetch`.
+      #     fetch-depth: 0
+      # - name: Setup variables
+      #   run: |
+      #     $_ver = "$(git rev-list HEAD --count)-${{ github.run_number }}-$(git rev-parse --short=8 HEAD)"
+      #     $_name = "$(Split-Path -Path $pwd -Leaf)-$_ver"
+      #     $_file_ext = "zip"
+      #     echo "commit_ver=$_name" >> "$Env:GITHUB_ENV"
+      #     echo "arc_name=$_name.$_file_ext" >> "$Env:GITHUB_ENV"
+      #     echo "arc_path=${{ github.workspace }}\$_name.$_file_ext" >> "$Env:GITHUB_ENV"
+      #     echo "installer_path=${{ github.workspace }}\$_name.msi" >> "$Env:GITHUB_ENV"
+      #     mkdir build/${{ env.CONFIG }}
+      # - name: Make certificate and install WiX Toolset
+      #   working-directory: build/${{ env.CONFIG }}
+      #   run: |
+      #     echo "Setup VS Environment Variables"
+      #     $installationPath = vswhere.exe -prerelease -latest -property installationPath
+      #     if ($installationPath -and (test-path "$installationPath\Common7\Tools\vsdevcmd.bat"))
+      #     {
+      #         & "${env:COMSPEC}" /s /c "`"$installationPath\Common7\Tools\vsdevcmd.bat`" -no_logo && set" | foreach-object {
+      #             $name, $value = $_ -split '=', 2
+      #             set-content env:\"$name" $value
+      #         }
+      #     }
+      #     echo "Create build certificate"
+      #     makecert -r -pe -n "CN=Test Certificate - For Internal Use Only" -ss PrivateCertStore testcert.cer
+      #     certutil -addstore root testcert.cer
+      #     echo "Install WiX Toolset"
+      #     curl -fLJO https://wixtoolset.gallerycdn.vsassets.io/extensions/wixtoolset/wixtoolsetvisualstudio2022extension/1.0.0.22/1668223914320/Votive2022.vsix
+      #     VSIXInstaller.exe /quiet Votive2022.vsix
+      # - name: Install vcpkg
+      #   run: |
+      #     ${{ env.VC_PKG_PATH }}\bootstrap-vcpkg.bat
+      #     ${{ env.VC_PKG_PATH }}\vcpkg.exe integrate install
+      #     ${{ env.VC_PKG_PATH }}\vcpkg.exe install
+      # - name: Setup Chromium Embedded Framework
+      #   run: |
+      #     curl -fLJO "https://github.com/illusion0001/PresentMon/releases/download/temp-files/cef_binary_122.1.8+g40272b5+chromium-122.0.6261.69_windows64_CefBuilt.7z"
+      #     7z x "cef_binary_122.1.8+g40272b5+chromium-122.0.6261.69_windows64_CefBuilt.7z" "-o${{ github.workspace }}\IntelPresentMon\AppCef"
+
+      # - name: Zip files
+      #   if: github.event_name == 'workflow_dispatch'
+      #   working-directory: build
+      #   run: |
+      #     Move-Item -Path "${{ github.workspace }}\build\${{ env.CONFIG }}\en-us\PresentMon.msi" -Destination "${{ env.installer_path }}"
+      #     Rename-Item -Path "${{ env.CONFIG }}" -NewName ${{ env.commit_ver }}
+      #     $compress = @{
+      #         Path = "${{ env.commit_ver }}"
+      #         CompressionLevel = "Optimal"
+      #         DestinationPath = "${{ env.arc_path }}"
+      #     }
+      #     Compress-Archive @compress
+      #     ls
       - name: Add MSBuild to PATH
         uses: microsoft/setup-msbuild@main
       - name: Build ${{ env.SOLUTION_FILE }} (${{ env.CONFIG }})
         run: msbuild /p:Platform=x64,Configuration=${{ env.CONFIG }} ${{ env.SOLUTION_FILE }}
-      - name: Zip files
-        if: github.event_name == 'workflow_dispatch'
-        working-directory: build
-        run: |
-          Move-Item -Path "${{ github.workspace }}\build\${{ env.CONFIG }}\en-us\PresentMon.msi" -Destination "${{ env.installer_path }}"
-          Rename-Item -Path "${{ env.CONFIG }}" -NewName ${{ env.commit_ver }}
-          $compress = @{
-              Path = "${{ env.commit_ver }}"
-              CompressionLevel = "Optimal"
-              DestinationPath = "${{ env.arc_path }}"
-          }
-          Compress-Archive @compress
-          ls
       - name: Create Release
         if: github.event_name == 'workflow_dispatch'
         env:
